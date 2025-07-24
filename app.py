@@ -1,68 +1,64 @@
 import streamlit as st
 import joblib
+import re
 
-# Load both models
+# Load models
 nlp_model = joblib.load("question_nlp_model_v2.pkl")
 topic_model = joblib.load("topic_classifier.pkl")
 topic_encoder = joblib.load("topic_encoder.pkl")
+syllabus_vectorizer = joblib.load("syllabus_vectorizer.pkl")
+syllabus_model = joblib.load("syllabus_topics.pkl")  # Binary classifier: is it C syllabus or not?
 
+# Text cleaning
+def preprocess(text):
+    text = text.lower().strip()
+    text = re.sub(r'[^\w\s]', '', text)
+    return text
+
+# App Title
+st.set_page_config(page_title="C PYQ Smart Predictor", page_icon="📘")
 st.title("📘 C PYQ Smart Predictor")
-st.markdown("Enter a C programming question and get predictions for **exam probability** and **topic**.")
+st.markdown("Get predictions for:")
+st.markdown("- 🔍 If your question is from **C Syllabus**")
+st.markdown("- 📚 Its **Topic**")
+st.markdown("- 🎯 Its **Probability to Appear** in the Exam")
 
-# Input box
-user_question = st.text_area("📝 Enter your question below:", height=100)
+# User Input
+question = st.text_area("📝 Enter your question:", height=100)
 
-if user_question:
-    # Preprocess question
-    cleaned_question = user_question.strip().lower()
+if question:
+    cleaned = preprocess(question)
 
-    # Predict topic
-    topic_encoded = topic_model.predict([cleaned_question])[0]
-    predicted_topic = topic_encoder.inverse_transform([topic_encoded])[0]
+    # Check if question belongs to C Syllabus
+    is_c = syllabus_model.predict(syllabus_vectorizer.transform([cleaned]))[0]
 
-    # Predict exam probability
-    prediction = nlp_model.predict([cleaned_question])[0]
+    st.subheader("📘 C Syllabus Check")
+    if is_c:
+        st.success("✅ This question is related to the C programming syllabus.")
+        
+        # Predict Topic
+        topic_encoded = topic_model.predict([cleaned])[0]
+        predicted_topic = topic_encoder.inverse_transform([topic_encoded])[0]
+        
+        # Predict Probability
+        prob = nlp_model.predict_proba([cleaned])[0][1]
 
-    # Show results
-    st.subheader("🔍 Prediction Result")
-    st.markdown(f"📚 **Predicted Topic:** `{predicted_topic}`")
-    
-    if prediction == 1:
-        st.success("✅ This question has a **high probability** of appearing in exams.")
+        # Display Results
+        st.subheader("🔍 Prediction Result")
+        st.markdown(f"📚 **Predicted Topic:** `{predicted_topic}`")
+
+        if prob >= 0.6:
+            st.success(f"✅ **High Probability to Appear** ({prob*100:.2f}%)")
+        elif prob >= 0.4:
+            st.warning(f"⚠️ **Medium Probability** ({prob*100:.2f}%)")
+        else:
+            st.error(f"❌ **Low Probability** ({prob*100:.2f}%)")
+
     else:
-        st.warning("⚠️ This question has **low probability** of appearing.")
+        st.error("🚫 This question does **not** seem to belong to the C programming syllabus.")
+        st.markdown("💡 Try asking a question like `What is recursion in C?` or `Explain arrays in C.`")
 
 # Footer
 st.markdown("---")
-st.caption("Trained using real PYQs and NLP trend analysis (Logistic Regression + TF-IDF)")
-import streamlit as st
-import joblib
-
-# Load the trained NLP model
-model = joblib.load("question_nlp_model_v2.pkl")
-
-# App UI
-st.title("📘 C PYQ Probability Predictor")
-st.markdown("Ask any C programming question and find out if it has a high probability to appear in exams based on past trends.")
-
-# User input
-question = st.text_input("🔍 Enter your C programming question:")
-
-if question:
-    # Preprocess the input
-    processed_question = question.lower()
-
-    # Predict probability
-    prob = model.predict_proba([processed_question])[0][1]  # Probability for class 1
-
-    # Display results
-    st.subheader("🧠 Prediction Result")
-    if prob >= 0.6:
-        st.success(f"✅ High Probability to Appear ({prob*100:.2f}%)")
-    elif prob >= 0.4:
-        st.warning(f"⚠️ Medium Probability to Appear ({prob*100:.2f}%)")
-    else:
-        st.error(f"❌ Low Probability to Appear ({prob*100:.2f}%)")
-
-    # For debugging
-    st.caption("This result is based on trends in previous years' C programming questions.")
+st.caption("🧠 Trained on C PYQs using Logistic Regression, TF-IDF and syllabus validation.")
+    
