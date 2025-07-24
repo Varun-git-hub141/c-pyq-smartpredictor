@@ -24,7 +24,7 @@ if user_question:
 
     # Check if question belongs to C Syllabus
     syllabus_vector = syllabus_vectorizer.transform([cleaned])
-    is_c = bool(syllabus_model.predict(syllabus_vector)[0]) # ✅ FIXED LINE
+    is_c = bool(syllabus_model.predict(syllabus_vector).tolist()[0]) # ✅ FIXED LINE
 
     st.subheader("📘 C Syllabus Check")
     if is_c:
