@@ -5,7 +5,7 @@ import joblib
 nlp_model = joblib.load("question_nlp_model_v2.pkl")
 topic_model = joblib.load("topic_classifier.pkl")
 topic_encoder = joblib.load("topic_encoder.pkl")
-syllabus_model = joblib.load("syllabus_topics(2).pkl")  # ✅ This is the trained pipeline model
+syllabus_model = joblib.load("syllabus_topics.pkl")  # ✅ This is the trained pipeline model
 
 # App UI
 st.set_page_config(page_title="C PYQ Smart Predictor", layout="centered")
