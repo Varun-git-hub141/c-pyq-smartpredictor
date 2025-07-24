@@ -1,14 +1,13 @@
 import streamlit as st
 import joblib
 
-# Load all models and encoders
+# Load models
 nlp_model = joblib.load("question_nlp_model_v2.pkl")
 topic_model = joblib.load("topic_classifier.pkl")
 topic_encoder = joblib.load("topic_encoder.pkl")
-syllabus_model = joblib.load("syllabus_topics.pkl")
-syllabus_vectorizer = joblib.load("syllabus_vectorizer.pkl")
+syllabus_model = joblib.load("syllabus_topics.pkl")  # ✅ This is the trained pipeline model
 
-# App Title
+# App UI
 st.set_page_config(page_title="C PYQ Smart Predictor", layout="centered")
 st.title("📘 C PYQ Smart Predictor")
 st.markdown("Enter a C programming question to know:")
@@ -22,9 +21,8 @@ user_question = st.text_area("📝 Enter your C programming question below:", he
 if user_question:
     cleaned = user_question.strip().lower()
 
-    # Check if question belongs to C Syllabus
-    syllabus_vector = syllabus_vectorizer.transform([cleaned])
-    is_c = bool(syllabus_model.predict(syllabus_vector).tolist()[0]) # ✅ FIXED LINE
+    # ✅ Syllabus check directly using the trained pipeline
+    is_c = bool(syllabus_model.predict([cleaned])[0])
 
     st.subheader("📘 C Syllabus Check")
     if is_c:
@@ -37,7 +35,7 @@ if user_question:
         # Predict Probability
         prob = nlp_model.predict_proba([cleaned])[0][1]
 
-        # Display Results
+        # Display
         st.subheader("🔍 Prediction Result")
         st.markdown(f"📚 **Predicted Topic:** `{predicted_topic}`")
 
