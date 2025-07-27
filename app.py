@@ -1,37 +1,51 @@
 import streamlit as st
 import joblib
 
-# Load all models
+# Load models
 nlp_model = joblib.load("question_nlp_model_v2.pkl")
 topic_model = joblib.load("topic_classifier.pkl")
 topic_encoder = joblib.load("topic_encoder.pkl")
-non_c_model = joblib.load("c_non_c_classifier.joblib")
-non_c_vectorizer = joblib.load("tfidf_vectorizer.joblib")
+syllabus_model = joblib.load("syllabus_topics.pkl")
+non_c_classifier = joblib.load("c_non_c_classifier.joblib")
+non_c_vectorizer = joblib.load("c_non_c_vectorizer.joblib")
 
-# Streamlit page setup
+# App UI
 st.set_page_config(page_title="C PYQ Smart Predictor", layout="centered")
 st.title("📘 C PYQ Smart Predictor")
-st.markdown("Enter a question to check:")
-st.markdown("- 📚 Is it a C programming question?")
-st.markdown("- 🎯 If yes: predicted topic and probability of appearing in exams")
+st.markdown("Enter a C programming question to know:")
+st.markdown("- 📚 **Predicted Topic**")
+st.markdown("- 🎯 **Exam Appearance Probability**")
+st.markdown("- 🧾 **Syllabus Match Check**")
 
-# Input box
-user_question = st.text_area("📝 Enter your question below:", height=100)
+# Text input and button
+user_question = st.text_input("📝 Type your question here:")
+play = st.button("▶️ Play / Predict")
 
-if user_question:
+if play and user_question:
     cleaned = user_question.strip().lower()
 
-    # Step 1: Check if question is C-related or not
-    vectorized = non_c_vectorizer.transform([cleaned])
-    is_c_related = bool(non_c_model.predict(vectorized)[0])
+    # Step 1: Fallback keyword match
+    fallback_keywords = [
+        "what is c", "define c", "c language", "who invented c", "c programming",
+        "why c language", "uses of c", "advantages of c", "features of c"
+    ]
+    is_obviously_c = any(keyword in cleaned for keyword in fallback_keywords)
+
+    # Step 2: ML syllabus check
+    is_c_model = bool(syllabus_model.predict([cleaned])[0])
+
+    # Final decision
+    is_c = is_obviously_c or is_c_model
 
     st.subheader("📘 C Syllabus Check")
-    if is_c_related:
+    if is_c:
         st.success("✅ This question is related to the C programming syllabus.")
 
-        # Step 2: Predict Topic and Exam Probability
+        # Predict topic
         topic_encoded = topic_model.predict([cleaned])[0]
         predicted_topic = topic_encoder.inverse_transform([topic_encoded])[0]
+
+        # Predict probability
         prob = nlp_model.predict_proba([cleaned])[0][1]
 
         st.subheader("🔍 Prediction Result")
@@ -42,11 +56,6 @@ if user_question:
         elif prob >= 0.4:
             st.warning(f"⚠️ Medium Probability ({prob * 100:.2f}%)")
         else:
-            st.error(f"❌ Low Probability to Appear ({prob * 100:.2f}%)")
-
+            st.error(f"❌ Low Probability ({prob * 100:.2f}%)")
     else:
-        st.error("🚫 This question is **not related to the C programming syllabus.**")
-
-# Footer
-st.markdown("---")
-st.caption("🔍 Powered by custom-trained ML models on previous year C questions and topics.")
+        st.error("🚫 This question is **not related** to the C programming syllabus.")
