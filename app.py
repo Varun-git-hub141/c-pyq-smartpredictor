@@ -7,7 +7,7 @@ topic_model = joblib.load("topic_classifier.pkl")
 topic_encoder = joblib.load("topic_encoder.pkl")
 syllabus_model = joblib.load("syllabus_topics.pkl")
 non_c_classifier = joblib.load("c_non_c_classifier.joblib")
-non_c_vectorizer = joblib.load("c_non_c_vectorizer.joblib")
+non_c_vectorizer = joblib.load("tfidf_vectorizer.joblib")
 
 # App UI
 st.set_page_config(page_title="C PYQ Smart Predictor", layout="centered")
