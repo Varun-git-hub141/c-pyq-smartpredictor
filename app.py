@@ -6,7 +6,7 @@ nlp_model = joblib.load("question_nlp_model_v2.pkl")
 topic_model = joblib.load("topic_classifier.pkl")
 topic_encoder = joblib.load("topic_encoder.pkl")
 non_c_model = joblib.load("c_non_c_classifier.joblib")
-non_c_vectorizer = joblib.load("c_non_c_vectorizer.joblib")
+non_c_vectorizer = joblib.load("tfdif_vectorizer.joblib")
 
 # Streamlit page setup
 st.set_page_config(page_title="C PYQ Smart Predictor", layout="centered")
