@@ -1,58 +1,39 @@
-import streamlit as st
+# Step 1: Import libraries
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.linear_model import LogisticRegression
 import joblib
 
-# Load models
-nlp_model = joblib.load("question_nlp_model_v2.pkl")          # Exam probability
-topic_model = joblib.load("topic_classifier.pkl")              # Topic classifier
-topic_encoder = joblib.load("topic_encoder.pkl")               # Label encoder
-syllabus_model = joblib.load("syllabus_topics.pkl")            # TF-IDF + classifier pipeline for C-syllabus
+# Step 2: Upload the file from file manager
+from google.colab import files
+uploaded = files.upload()
 
-# Streamlit UI
-st.set_page_config(page_title="C PYQ Smart Predictor", layout="centered")
-st.title("📘 C PYQ Smart Predictor")
-st.markdown("Enter a C programming question to know:")
-st.markdown("- 📚 **Predicted Topic**")
-st.markdown("- 🎯 **Exam Appearance Probability**")
-st.markdown("- 🧾 **Syllabus Match Check**")
+# Step 3: Read the uploaded CSV file
+filename = list(uploaded.keys())[0]  # Automatically get uploaded file name
+df = pd.read_csv(filename)
 
-# User input
-user_question = st.text_area("📝 Enter your C programming question below:", height=100)
+# Step 4: Split features and labels
+X = df['question']
+y = df['label']
 
-if user_question:
-    cleaned = user_question.strip().lower()
+# Step 5: Split data into train and test sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-    # Step 1: Check if question belongs to C syllabus
-    try:
-        is_c_related = bool(syllabus_model.predict([cleaned])[0])
-    except Exception as e:
-        st.error("⚠️ Error checking syllabus relevance.")
-        st.exception(e)
-        st.stop()
+# Step 6: Vectorize text data
+vectorizer = TfidfVectorizer()
+X_train_vec = vectorizer.fit_transform(X_train)
+X_test_vec = vectorizer.transform(X_test)
 
-    # Step 2: Block non-C questions
-    if not is_c_related:
-        st.error("🚫 This question is **not related to the C programming syllabus**.")
-    else:
-        st.success("✅ This question is related to the **C programming syllabus**.")
+# Step 7: Train logistic regression model
+model = LogisticRegression()
+model.fit(X_train_vec, y_train)
 
-        # Predict topic
-        topic_encoded = topic_model.predict([cleaned])[0]
-        predicted_topic = topic_encoder.inverse_transform([topic_encoded])[0]
+# Step 8: Evaluate the model
+accuracy = model.score(X_test_vec, y_test)
+print(f"✅ Model Accuracy: {accuracy * 100:.2f}%")
 
-        # Predict exam probability
-        prob = nlp_model.predict_proba([cleaned])[0][1]
-
-        # Show results
-        st.subheader("🔍 Prediction Result")
-        st.markdown(f"📚 **Predicted Topic:** `{predicted_topic}`")
-
-        if prob >= 0.6:
-            st.success(f"✅ High Probability to Appear ({prob * 100:.2f}%)")
-        elif prob >= 0.4:
-            st.warning(f"⚠️ Medium Probability ({prob * 100:.2f}%)")
-        else:
-            st.error(f"❌ Low Probability ({prob * 100:.2f}%)")
-
-# Footer
-st.markdown("---")
-st.caption("🧠 Trained using real C PYQs, NLP pipelines, and syllabus filtering.")
+# Step 9: Save the model and vectorizer
+joblib.dump(model, 'c_non_c_classifier.pkl')
+joblib.dump(vectorizer, 'c_non_c_vectorizer.pkl')
+print("🎉 Model and Vectorizer saved as 'c_non_c_classifier.pkl' and 'c_non_c_vectorizer.pkl'")
