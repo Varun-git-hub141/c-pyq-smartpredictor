@@ -27,22 +27,37 @@ st.set_page_config(page_title="C PYQ Smart Predictor", page_icon="📘", layout=
 st.markdown("""
     <style>
         body {
-            background: linear-gradient(120deg, #dfe9f3 0%, #ffffff 100%);
+            background-color: #f4f7fb;
         }
         .main {
-            backdrop-filter: blur(10px);
-            background-color: rgba(255, 255, 255, 0.7);
-            border-radius: 15px;
-            padding: 30px;
-            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.2);
-            margin-top: 20px;
+            padding: 0;
         }
         h1, h2, h3, h4 {
             font-family: 'Poppins', sans-serif;
-            color: #333333;
+            color: #222831;
+        }
+        .hero-section {
+            background-color: #e3f2fd;
+            padding: 50px 20px;
+            text-align: center;
+            border-radius: 20px;
+            margin-bottom: 30px;
+        }
+        .hero-section img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+        .input-card {
+            background-color: #ffffff;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
         }
         .stButton > button {
-            background-color: #2F80ED;
+            background-color: #4f46e5;
             color: white;
             border-radius: 12px;
             padding: 0.75em 2em;
@@ -51,35 +66,26 @@ st.markdown("""
             transition: all 0.3s ease-in-out;
         }
         .stButton > button:hover {
-            background-color: #1c5db5;
+            background-color: #3730a3;
             transform: scale(1.05);
-        }
-        hr {
-            border: none;
-            height: 2px;
-            background-color: #ddd;
-            margin: 20px 0;
         }
     </style>
 """, unsafe_allow_html=True)
 
-# -------------------- Optional Lottie Animation -------------------- #
-try:
-    from streamlit_lottie import st_lottie
-    lottie_study = load_lottieurl("https://assets10.lottiefiles.com/packages/lf20_tijmpv.json")
-    if lottie_study:
-        st_lottie(lottie_study, speed=1, width=250)
-except ModuleNotFoundError:
-    st.image("https://via.placeholder.com/250x150.png?text=C+PYQ+Smart+Predictor")  # fallback image
+# -------------------- Hero Section -------------------- #
+st.markdown("""
+    <div class='hero-section'>
+        <img src='https://i.postimg.cc/4yBx1N7f/c-predictor-hero.jpg' alt='Team Working'>
+        <h1>📘 C PYQ Smart Predictor</h1>
+        <h4>Your Smart AI Exam Assistant by teamalris 🚀</h4>
+    </div>
+""", unsafe_allow_html=True)
 
-# -------------------- Header -------------------- #
-st.markdown("<h1 style='text-align: center;'>📘 C PYQ Smart Predictor</h1>", unsafe_allow_html=True)
-st.markdown("<h4 style='text-align: center;'>Your Smart AI Exam Assistant by teamalris 🚀</h4>", unsafe_allow_html=True)
-st.markdown("<hr>", unsafe_allow_html=True)
-
-# -------------------- Input -------------------- #
-st.markdown("### ✍️ Enter your C programming question below:")
+# -------------------- Input Card -------------------- #
+st.markdown("<div class='input-card'>", unsafe_allow_html=True)
+st.markdown("### 🐇 Enter your C programming question below:")
 user_question = st.text_input("", placeholder="e.g., Explain the use of pointers in arrays in C...")
+st.markdown("</div>", unsafe_allow_html=True)
 
 # -------------------- Predict -------------------- #
 if st.button("🎯 Predict"):
@@ -97,8 +103,11 @@ if st.button("🎯 Predict"):
             is_c_model = bool(non_c_classifier.predict(non_c_vector)[0])
             is_c = is_obviously_c or is_c_model
 
-            st.markdown("<hr>", unsafe_allow_html=True)
-            st.markdown("## 📘 C Syllabus Check")
+            # C Syllabus Check card
+            st.markdown("""
+                <div class='input-card'>
+                <h2>📘 C Syllabus Check</h2>
+            """, unsafe_allow_html=True)
 
             if is_c:
                 st.success("✅ This question is related to the C programming syllabus.")
@@ -108,50 +117,30 @@ if st.button("🎯 Predict"):
                 prob = nlp_model.predict_proba([cleaned])[0][1]
                 syllabus_match = "✅ Yes, it's in syllabus"
 
-                st.markdown("<hr>", unsafe_allow_html=True)
-                st.markdown("## 🎉 Prediction Results")
+                st.markdown("### 🎉 Prediction Results")
 
-                # -------------------- Results Cards -------------------- #
                 col1, col2, col3 = st.columns(3)
 
                 with col1:
-                    st.markdown(f"""
-                        <div style="backdrop-filter: blur(6px); background-color: rgba(255,255,255,0.6); 
-                        padding:20px; border-radius:15px; box-shadow: 0 4px 20px rgba(0,0,0,0.1);">
-                            <h3>📑 Predicted Topic</h3>
-                            <p style="font-size:24px; color:#2F80ED;"><b>{predicted_topic}</b></p>
-                        </div>
-                    """, unsafe_allow_html=True)
+                    st.metric(label="📑 Predicted Topic", value=predicted_topic)
 
                 with col2:
                     if prob >= 0.6:
                         appearance_text = f"High ({prob * 100:.2f}%)"
-                        color = "#27AE60"
                     elif prob >= 0.4:
                         appearance_text = f"Medium ({prob * 100:.2f}%)"
-                        color = "#F2994A"
                     else:
                         appearance_text = f"Low ({prob * 100:.2f}%)"
-                        color = "#EB5757"
-
-                    st.markdown(f"""
-                        <div style="backdrop-filter: blur(6px); background-color: rgba(255,255,255,0.6); 
-                        padding:20px; border-radius:15px; box-shadow: 0 4px 20px rgba(0,0,0,0.1);">
-                            <h3>📊 Exam Probability</h3>
-                            <p style="font-size:24px; color:{color};"><b>{appearance_text}</b></p>
-                        </div>
-                    """, unsafe_allow_html=True)
+                    st.metric(label="📊 Exam Probability", value=appearance_text)
 
                 with col3:
-                    st.markdown(f"""
-                        <div style="backdrop-filter: blur(6px); background-color: rgba(255,255,255,0.6); 
-                        padding:20px; border-radius:15px; box-shadow: 0 4px 20px rgba(0,0,0,0.1);">
-                            <h3>✅ Syllabus Match</h3>
-                            <p style="font-size:24px; color:#27AE60;"><b>{syllabus_match}</b></p>
-                        </div>
-                    """, unsafe_allow_html=True)
+                    st.metric(label="✅ Syllabus Match", value=syllabus_match)
+
             else:
                 st.error("🚫 This question is **not related** to the C programming syllabus.")
+
+            st.markdown("</div>", unsafe_allow_html=True)
+
     else:
         st.warning("⚠️ Please enter a question before clicking Predict!")
 
