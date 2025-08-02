@@ -1,16 +1,18 @@
 import streamlit as st
 import joblib
-from streamlit_lottie import st_lottie
 import requests
 
-# -------------------- Function to load Lottie -------------------- #
+# -------------------- Optional: Lottie Animation Loader -------------------- #
 def load_lottieurl(url: str):
-    r = requests.get(url)
-    if r.status_code != 200:
+    try:
+        r = requests.get(url)
+        if r.status_code != 200:
+            return None
+        return r.json()
+    except:
         return None
-    return r.json()
 
-# -------------------- Load models -------------------- #
+# -------------------- Load joblib models -------------------- #
 nlp_model = joblib.load("question_nlp_model_v2.pkl")
 topic_model = joblib.load("topic_classifier.pkl")
 topic_encoder = joblib.load("topic_encoder.pkl")
@@ -59,16 +61,20 @@ st.markdown("""
             margin: 20px 0;
         }
     </style>
-    """, unsafe_allow_html=True)
+""", unsafe_allow_html=True)
 
-# -------------------- Lottie Animation -------------------- #
-lottie_study = load_lottieurl("https://assets10.lottiefiles.com/packages/lf20_tijmpv.json")  # You can replace URL
+# -------------------- Optional Lottie Animation -------------------- #
+try:
+    from streamlit_lottie import st_lottie
+    lottie_study = load_lottieurl("https://assets10.lottiefiles.com/packages/lf20_tijmpv.json")
+    if lottie_study:
+        st_lottie(lottie_study, speed=1, width=250)
+except ModuleNotFoundError:
+    st.image("https://via.placeholder.com/250x150.png?text=C+PYQ+Smart+Predictor")  # fallback image
 
 # -------------------- Header -------------------- #
-st_lottie(lottie_study, speed=1, width=250)
 st.markdown("<h1 style='text-align: center;'>📘 C PYQ Smart Predictor</h1>", unsafe_allow_html=True)
 st.markdown("<h4 style='text-align: center;'>Your Smart AI Exam Assistant by teamalris 🚀</h4>", unsafe_allow_html=True)
-
 st.markdown("<hr>", unsafe_allow_html=True)
 
 # -------------------- Input -------------------- #
@@ -86,6 +92,7 @@ if st.button("🎯 Predict"):
                 "why c language", "uses of c", "advantages of c", "features of c"
             ]
             is_obviously_c = any(keyword in cleaned for keyword in fallback_keywords)
+
             non_c_vector = non_c_vectorizer.transform([cleaned])
             is_c_model = bool(non_c_classifier.predict(non_c_vector)[0])
             is_c = is_obviously_c or is_c_model
@@ -117,8 +124,6 @@ if st.button("🎯 Predict"):
                     """, unsafe_allow_html=True)
 
                 with col2:
-                    appearance_text = ""
-                    color = ""
                     if prob >= 0.6:
                         appearance_text = f"High ({prob * 100:.2f}%)"
                         color = "#27AE60"
@@ -145,7 +150,6 @@ if st.button("🎯 Predict"):
                             <p style="font-size:24px; color:#27AE60;"><b>{syllabus_match}</b></p>
                         </div>
                     """, unsafe_allow_html=True)
-
             else:
                 st.error("🚫 This question is **not related** to the C programming syllabus.")
     else:
@@ -153,5 +157,4 @@ if st.button("🎯 Predict"):
 
 # -------------------- Footer -------------------- #
 st.markdown("<hr>", unsafe_allow_html=True)
-st.markdown("<p style='text-align: center;'>Built with ❤️ by <b>teamairis</b> | Hackathon 2025</p>", unsafe_allow_html=True)
-
+st.markdown("<p style='text-align: center;'>Built with ❤️ by <b>teamalris</b> | Hackathon 2025</p>", unsafe_allow_html=True)
