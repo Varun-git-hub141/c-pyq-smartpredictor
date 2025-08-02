@@ -153,4 +153,5 @@ if st.button("🎯 Predict"):
 
 # -------------------- Footer -------------------- #
 st.markdown("<hr>", unsafe_allow_html=True)
-st.markdown("<p style='text-align: center;'>Built with ❤️ by <b>teamalris</b> | Hackathon 2025</p>", unsafe_allow_html=True)
+st.markdown("<p style='text-align: center;'>Built with ❤️ by <b>teamairis</b> | Hackathon 2025</p>", unsafe_allow_html=True)
+
