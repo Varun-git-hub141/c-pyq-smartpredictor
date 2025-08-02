@@ -75,7 +75,7 @@ st.markdown("""
 # -------------------- Hero Section -------------------- #
 st.markdown("""
     <div class='hero-section'>
-        <img src='https://i.postimg.cc/XYfSXMsS/IMG-20250802-101133-1.jpg' alt='Team Working'>
+        <img src='https://i.postimg.cc/FFbh7Lzn/undraw-ideas-vn7a.png' alt='Team Working'>
         <h1>📘 C PYQ Smart Predictor</h1>
         <h4>Your Smart AI Exam Assistant by teamalris 🚀</h4>
     </div>
@@ -147,4 +147,5 @@ if st.button("🎯 Predict"):
 # -------------------- Footer -------------------- #
 st.markdown("<hr>", unsafe_allow_html=True)
 st.markdown("<p style='text-align: center;'>Built with ❤️ by <b>teamalris</b> | Hackathon 2025</p>", unsafe_allow_html=True)
+
 
